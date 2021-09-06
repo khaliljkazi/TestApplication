@@ -21,7 +21,7 @@ namespace TestApplication
     public static class PDFSecure
     {
         [FunctionName("PDFSecure")]
-        public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log)
+        public static async Task<string> Run(HttpRequestMessage req, TraceWriter log)
         {
             log.Info("C# HTTP trigger function processed a request.");
 
@@ -55,13 +55,14 @@ namespace TestApplication
             document.Save(ms);
             ms.Position = 0;
             HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new ByteArrayContent(ms.ToArray());
-            response.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
-            {
-                FileName = "PDFDocument.pdf"
-            };
-            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
-            return response;
+            
+            var bytes = new Byte[(int)ms.Length];
+
+            ms.Seek(0, SeekOrigin.Begin);
+            ms.Read(bytes, 0, (int)ms.Length);
+
+            return Convert.ToBase64String(bytes);
+
         }
     }
 }
